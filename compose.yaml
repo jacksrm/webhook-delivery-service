@@ -6,3 +6,23 @@ services:
     container_name: webhook-delivery-api
     ports:
       - "8000:8000"
+
+  postgres:
+    image: postgres:18
+    container_name: webhook-delivery-postgres
+    environment:
+      POSTGRES_USER: webhook
+      POSTGRES_PASSWORD: webhook
+      POSTGRES_DB: webhook_delivery
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webhook -d webhook_delivery"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
