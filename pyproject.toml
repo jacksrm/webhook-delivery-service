@@ -1,0 +1,17 @@
+[project]
+name = "webhook-delivery-service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Jacson Rodrigues", email = "github.obsessive123@passmail.net" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+webhook-delivery-service = "webhook_delivery_service:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
