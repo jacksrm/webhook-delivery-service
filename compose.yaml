@@ -6,6 +6,8 @@ services:
     container_name: webhook-delivery-api
     ports:
       - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql+psycopg://webhook:webhook@postgres:5432/webhook_delivery"
 
   postgres:
     image: postgres:18
