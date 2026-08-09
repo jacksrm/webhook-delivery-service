@@ -34,7 +34,7 @@ venv = ".venv"
 
 [tool.ruff]
 target-version = "py314"
-line-length = 88
+line-length = 70
 
 [tool.ruff.lint]
 select = [
