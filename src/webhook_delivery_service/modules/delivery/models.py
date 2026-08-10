@@ -17,7 +17,7 @@ class Delivery(Base):
     )
 
     webhook_id: Mapped[UUID] = mapped_column(
-        ForeignKey("events.id", ondelete="CASCADE"), nullable=False
+        ForeignKey("webhooks.id"), nullable=False
     )
 
     status: Mapped[str] = mapped_column(

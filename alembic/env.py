@@ -8,6 +8,8 @@ from alembic import context
 
 from webhook_delivery_service.infrastructure.database import Base
 from webhook_delivery_service.modules.webhooks.models import Webhook  # noqa: F401
+from webhook_delivery_service.modules.events.models import Event  # noqa: F401
+from webhook_delivery_service.modules.delivery.models import Delivery  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
