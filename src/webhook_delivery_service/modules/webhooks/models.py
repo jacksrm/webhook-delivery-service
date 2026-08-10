@@ -1,7 +1,15 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Table, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    String,
+    Table,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from webhook_delivery_service.infrastructure.database import Base
@@ -34,7 +42,9 @@ class Webhook(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
     )
 
     updated_at: Mapped[datetime] = mapped_column(
@@ -44,7 +54,9 @@ class Webhook(Base):
         onupdate=func.now(),
     )
 
-    def __init__(self, url: str, secret: str, is_active: bool = True) -> None:
+    def __init__(
+        self, url: str, secret: str, is_active: bool = True
+    ) -> None:
         self.id = uuid4()
         self.url = url
         self.secret = secret

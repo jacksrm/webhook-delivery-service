@@ -18,7 +18,9 @@ class Event(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
     )
 
     def __init__(self, type: str, data: dict[str, Any]):

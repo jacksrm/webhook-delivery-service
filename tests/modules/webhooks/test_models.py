@@ -19,6 +19,8 @@ def test_webhook_model_structure() -> None:
 
 
 def test_webhook_id_is_uuid() -> None:
-    webhook = Webhook(url="https://example.com/webhook", secret="secret")
+    webhook = Webhook(
+        url="https://example.com/webhook", secret="secret"
+    )
 
     assert isinstance(webhook.id, UUID)
