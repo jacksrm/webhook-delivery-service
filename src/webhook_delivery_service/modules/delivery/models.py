@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, String, func
+from sqlalchemy import DateTime, ForeignKey, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from webhook_delivery_service.infrastructure.database import Base
@@ -37,6 +37,11 @@ class Delivery(Base):
         nullable=False,
         server_default=func.now(),
         onupdate=func.now(),
+    )
+
+    __table_args__ = (
+        Index("ix_deliveries_event_id", "event_id"),
+        Index("ix_deliveries_webhook_id", "webhook_id"),
     )
 
     def __init__(self, event_id: UUID, webhook_id: UUID):
