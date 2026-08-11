@@ -29,5 +29,6 @@ def test_create_webhook() -> None:
     assert data["is_active"] is True
     assert data["created_at"] is not None
     assert data["updated_at"] is not None
+    assert set(data["event_types"]) == set(event_types)
 
     assert "secret" not in data

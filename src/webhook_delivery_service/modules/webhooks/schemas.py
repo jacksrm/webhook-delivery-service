@@ -16,5 +16,6 @@ class WebhookResponse(BaseModel):
     id: UUID
     url: str
     is_active: bool
+    event_types: list[str]
     created_at: datetime
     updated_at: datetime
