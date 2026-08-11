@@ -1,7 +1,7 @@
 from typing import Annotated, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -107,3 +107,37 @@ def list_webhooks(
         )
         for webhook in webhooks
     ]
+
+
+@router.get("/{webhook_id}", response_model=WebhookResponse)
+def get_webhook(
+    webhook_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+) -> WebhookResponse:
+
+    webhook = db.get(Webhook, webhook_id)
+
+    if webhook is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Webhook not found",
+        )
+    event_types = cast(
+        list[str],
+        db.execute(
+            select(webhook_event_types.c.event_type).where(
+                webhook_event_types.c.webhook_id == webhook.id
+            )
+        )
+        .scalars()
+        .all(),
+    )
+
+    return WebhookResponse(
+        id=webhook.id,
+        url=webhook.url,
+        event_types=event_types,
+        is_active=webhook.is_active,
+        created_at=webhook.created_at,
+        updated_at=webhook.updated_at,
+    )

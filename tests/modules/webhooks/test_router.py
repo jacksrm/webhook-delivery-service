@@ -80,3 +80,40 @@ def test_list_webhooks() -> None:
 
     for item in data:
         assert "secret" not in item
+
+
+def test_get_webhook() -> None:
+    webhook = {
+        "url": "https://example.com/webhook",
+        "secret": "super-secret",
+        "event_types": ["user.created", "order.created"],
+    }
+
+    create_response = client.post("/webhooks/", json=webhook)
+
+    assert create_response.status_code == 201
+
+    created_data = create_response.json()
+    webhook_id = created_data["id"]
+
+    response = client.get(f"/webhooks/{webhook_id}")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == webhook_id
+    assert data["url"] == webhook["url"]
+    assert set(data["event_types"]) == set(webhook["event_types"])
+    assert data["is_active"] is True
+    assert data["created_at"] is not None
+    assert data["updated_at"] is not None
+    assert "secret" not in data
+
+
+def test_get_webhook_not_found() -> None:
+    response = client.get(
+        "/webhooks/00000000-0000-0000-0000-000000000000"
+    )
+
+    assert response.status_code == 404
