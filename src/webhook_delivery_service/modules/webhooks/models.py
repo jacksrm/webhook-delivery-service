@@ -33,13 +33,24 @@ webhook_event_types = Table(
 class Webhook(Base):
     __tablename__ = "webhooks"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(
+        primary_key=True,
+    )
 
-    url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    url: Mapped[str] = mapped_column(
+        String(2048),
+        nullable=False,
+    )
 
-    secret: Mapped[str] = mapped_column(String(255), nullable=False)
+    secret: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
 
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -55,7 +66,10 @@ class Webhook(Base):
     )
 
     def __init__(
-        self, url: str, secret: str, is_active: bool = True
+        self,
+        url: str,
+        secret: str,
+        is_active: bool = True,
     ) -> None:
         self.id = uuid4()
         self.url = url

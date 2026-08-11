@@ -1,6 +1,6 @@
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 DATABASE_URL = os.environ["DATABASE_URL"]
 
@@ -10,3 +10,9 @@ class Base(DeclarativeBase):
 
 
 engine = create_engine(DATABASE_URL)
+
+SessionLocal = sessionmaker(
+    bind=engine,
+    class_=Session,
+    expire_on_commit=False,
+)
