@@ -15,7 +15,9 @@ class Event(Base):
 
     type: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(
+        JSON, nullable=False
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -25,7 +27,7 @@ class Event(Base):
 
     __table_args__ = (Index("ix_events_type", "type"),)
 
-    def __init__(self, type: str, data: dict[str, Any]):
+    def __init__(self, type: str, payload: dict[str, Any]):
         self.id = uuid4()
         self.type = type
-        self.data = data
+        self.payload = payload
