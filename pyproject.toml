@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.19.0",
+    "celery[redis]>=5.6.3",
     "fastapi[standard]>=0.141.1",
     "psycopg[binary]>=3.3.4",
     "pydantic>=2.13.4",
@@ -53,3 +54,7 @@ indent-style = "space"
 [tool.mypy]
 python_version = "3.14"
 strict = true
+
+[[tool.mypy.overrides]]
+module = ["celery.*"]
+ignore_missing_imports = true

@@ -8,6 +8,8 @@ services:
       - "8000:8000"
     environment:
       DATABASE_URL: "postgresql+psycopg://webhook:webhook@postgres:5432/webhook_delivery"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/1"
 
   postgres:
     image: postgres:18
@@ -38,6 +40,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webhook-delivery-worker
+    command: uv run celery -A webhook_delivery_service.infrastructure.celery:celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: "postgresql+psycopg://webhook:webhook@postgres:5432/webhook_delivery"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:
