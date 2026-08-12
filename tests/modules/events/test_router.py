@@ -48,3 +48,15 @@ def test_create_event_with_invalid_payload() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_create_event_with_null_payload() -> None:
+    response = client.post(
+        "/events/",
+        json={
+            "type": "user.created",
+            "payload": None,
+        },
+    )
+
+    assert response.status_code == 422
