@@ -56,5 +56,5 @@ python_version = "3.14"
 strict = true
 
 [[tool.mypy.overrides]]
-module = ["celery.*"]
+module = ["celery","celery.*"]
 ignore_missing_imports = true
