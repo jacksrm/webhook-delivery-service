@@ -189,3 +189,33 @@ def test_update_webhook_not_found() -> None:
     )
 
     assert response.status_code == 404
+
+
+def test_delete_webhook() -> None:
+    webhook = {
+        "url": "https://example.com/webhook",
+        "secret": "super-secret",
+        "event_types": ["user.created", "order.created"],
+    }
+
+    create_response = client.post("/webhooks/", json=webhook)
+
+    assert create_response.status_code == 201
+
+    webhook_id = create_response.json()["id"]
+
+    response = client.delete(f"/webhooks/{webhook_id}")
+
+    assert response.status_code == 204
+
+    get_response = client.get(f"/webhooks/{webhook_id}")
+
+    assert get_response.status_code == 404
+
+
+def test_delete_webhook_not_found() -> None:
+    response = client.delete(
+        "/webhooks/00000000-0000-0000-0000-000000000000",
+    )
+
+    assert response.status_code == 404

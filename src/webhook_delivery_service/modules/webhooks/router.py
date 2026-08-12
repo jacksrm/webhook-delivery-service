@@ -54,8 +54,10 @@ def create_webhook(
     event_types = cast(
         list[str],
         db.execute(
-            select(webhook_event_types.c.event_type).where(
-                webhook_event_types.c.webhook_id == webhook.id
+            select(
+                webhook_event_types.c.event_type,
+            ).where(
+                webhook_event_types.c.webhook_id == webhook.id,
             )
         )
         .scalars()
@@ -126,8 +128,10 @@ def get_webhook(
     event_types = cast(
         list[str],
         db.execute(
-            select(webhook_event_types.c.event_type).where(
-                webhook_event_types.c.webhook_id == webhook.id
+            select(
+                webhook_event_types.c.event_type,
+            ).where(
+                webhook_event_types.c.webhook_id == webhook.id,
             )
         )
         .scalars()
@@ -194,8 +198,10 @@ def update_webhook(
     event_types = cast(
         list[str],
         db.execute(
-            select(webhook_event_types.c.event_type).where(
-                webhook_event_types.c.webhook_id == webhook.id
+            select(
+                webhook_event_types.c.event_type,
+            ).where(
+                webhook_event_types.c.webhook_id == webhook.id,
             )
         )
         .scalars()
@@ -210,3 +216,22 @@ def update_webhook(
         created_at=webhook.created_at,
         updated_at=webhook.updated_at,
     )
+
+
+@router.delete(
+    "/{webhook_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+def delete_webhook(
+    webhook_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+) -> None:
+    webhook = db.get(Webhook, webhook_id)
+
+    if webhook is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Webhook not found",
+        )
+
+    db.delete(webhook)
+    db.commit()
