@@ -4,8 +4,13 @@ import httpx
 
 
 class DeliveryClient:
-    def __init__(self, http_client: httpx.Client) -> None:
+    def __init__(
+        self,
+        http_client: httpx.Client,
+        timeout: float,
+    ) -> None:
         self.http_client = http_client
+        self.timeout = timeout
 
     def post(
         self,
@@ -17,4 +22,5 @@ class DeliveryClient:
             url,
             json=payload,
             headers=headers,
+            timeout=self.timeout,
         )
