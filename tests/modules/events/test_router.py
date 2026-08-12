@@ -24,3 +24,27 @@ def test_create_event() -> None:
     assert data["type"] == event["type"]
     assert data["payload"] == event["payload"]
     assert data["created_at"] is not None
+
+
+def test_create_event_with_empty_type() -> None:
+    response = client.post(
+        "/events/",
+        json={
+            "type": "",
+            "payload": {"user_id": 123},
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_create_event_with_invalid_payload() -> None:
+    response = client.post(
+        "/events/",
+        json={
+            "type": "user.created",
+            "payload": ["invalid"],
+        },
+    )
+
+    assert response.status_code == 422
