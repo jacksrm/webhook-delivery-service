@@ -19,3 +19,10 @@ class WebhookResponse(BaseModel):
     event_types: list[str]
     created_at: datetime
     updated_at: datetime
+
+
+class WebhookUpdate(BaseModel):
+    url: str | None = None
+    secret: str | None = None
+    event_types: list[str] | None = None
+    is_active: bool | None = None

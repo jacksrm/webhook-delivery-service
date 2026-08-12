@@ -117,3 +117,75 @@ def test_get_webhook_not_found() -> None:
     )
 
     assert response.status_code == 404
+
+
+def test_update_webhook() -> None:
+    webhook = {
+        "url": "https://example.com/webhook",
+        "secret": "super-secret",
+        "event_types": ["user.created", "order.created"],
+    }
+
+    create_response = client.post("/webhooks/", json=webhook)
+
+    assert create_response.status_code == 201
+
+    webhook_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/webhooks/{webhook_id}",
+        json={
+            "url": "https://example.com/updated-webhook",
+            "event_types": ["order.created", "order.updated"],
+            "is_active": False,
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["id"] == webhook_id
+    assert data["url"] == "https://example.com/updated-webhook"
+    assert set(data["event_types"]) == {
+        "order.created",
+        "order.updated",
+    }
+    assert data["is_active"] is False
+    assert "secret" not in data
+
+
+def test_update_webhook_partial() -> None:
+    webhook = {
+        "url": "https://example.com/webhook",
+        "secret": "super-secret",
+        "event_types": ["user.created", "order.created"],
+    }
+
+    create_response = client.post("/webhooks/", json=webhook)
+
+    assert create_response.status_code == 201
+
+    webhook_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/webhooks/{webhook_id}",
+        json={"is_active": False},
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["url"] == webhook["url"]
+    assert set(data["event_types"]) == set(webhook["event_types"])
+    assert data["is_active"] is False
+
+
+def test_update_webhook_not_found() -> None:
+    response = client.patch(
+        "/webhooks/00000000-0000-0000-0000-000000000000",
+        json={"is_active": False},
+    )
+
+    assert response.status_code == 404

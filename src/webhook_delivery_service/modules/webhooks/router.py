@@ -17,6 +17,7 @@ from webhook_delivery_service.modules.webhooks.models import (
 from .schemas import (
     WebhookCreate,
     WebhookResponse,
+    WebhookUpdate,
 )
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -122,6 +123,74 @@ def get_webhook(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Webhook not found",
         )
+    event_types = cast(
+        list[str],
+        db.execute(
+            select(webhook_event_types.c.event_type).where(
+                webhook_event_types.c.webhook_id == webhook.id
+            )
+        )
+        .scalars()
+        .all(),
+    )
+
+    return WebhookResponse(
+        id=webhook.id,
+        url=webhook.url,
+        event_types=event_types,
+        is_active=webhook.is_active,
+        created_at=webhook.created_at,
+        updated_at=webhook.updated_at,
+    )
+
+
+@router.patch(
+    "/{webhook_id}",
+    response_model=WebhookResponse,
+)
+def update_webhook(
+    webhook_id: UUID,
+    data: WebhookUpdate,
+    db: Annotated[Session, Depends(get_db)],
+) -> WebhookResponse:
+    webhook = db.get(Webhook, webhook_id)
+
+    if webhook is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Webhook not found",
+        )
+
+    if data.url is not None:
+        webhook.url = data.url
+
+    if data.is_active is not None:
+        webhook.is_active = data.is_active
+
+    if data.secret is not None:
+        webhook.secret = data.secret
+
+    if data.event_types is not None:
+        db.execute(
+            webhook_event_types.delete().where(
+                webhook_event_types.c.webhook_id == webhook.id
+            )
+        )
+
+        db.execute(
+            webhook_event_types.insert(),
+            [
+                {
+                    "webhook_id": webhook.id,
+                    "event_type": event_type,
+                }
+                for event_type in data.event_types
+            ],
+        )
+
+    db.commit()
+    db.refresh(webhook)
+
     event_types = cast(
         list[str],
         db.execute(
