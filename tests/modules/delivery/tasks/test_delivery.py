@@ -113,3 +113,7 @@ def test_process_delivery_retries_on_connection_error() -> None:
 
 def test_process_delivery_has_exponential_backoff() -> None:
     assert process_delivery.retry_backoff is True
+
+
+def test_process_delivery_has_max_retries() -> None:
+    assert process_delivery.max_retries == 4
