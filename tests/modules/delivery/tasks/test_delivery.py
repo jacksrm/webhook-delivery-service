@@ -109,3 +109,7 @@ def test_process_delivery_retries_on_connection_error() -> None:
                     process_delivery.run(str(delivery.id))
 
                 retry.assert_called_once()
+
+
+def test_process_delivery_has_exponential_backoff() -> None:
+    assert process_delivery.retry_backoff is True

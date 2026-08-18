@@ -12,7 +12,10 @@ from ....modules.webhooks.models import Webhook
 from ...delivery.client import DeliveryClient
 
 
-@celery_app.task(bind=True)  # type: ignore[untyped-decorator]
+@celery_app.task(
+    bind=True,
+    retry_backoff=True,
+)  # type: ignore[untyped-decorator]
 def process_delivery(self: Task, delivery_id: str) -> dict[str, Any]:
     with SessionLocal() as db:
         delivery = db.get(Delivery, UUID(delivery_id))
