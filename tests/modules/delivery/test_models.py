@@ -34,3 +34,14 @@ def test_delivery_generates_unique_ids() -> None:
     )
 
     assert delivery_a.id != delivery_b.id
+
+
+def test_delivery_can_have_dead_status() -> None:
+    delivery = Delivery(
+        event_id=uuid4(),
+        webhook_id=uuid4(),
+    )
+
+    delivery.status = "dead"
+
+    assert delivery.status == "dead"

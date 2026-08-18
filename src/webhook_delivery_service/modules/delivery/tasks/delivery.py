@@ -1,6 +1,7 @@
 from typing import Any
 from uuid import UUID
 
+from celery.exceptions import MaxRetriesExceededError
 import httpx
 from celery import Task
 
@@ -25,6 +26,12 @@ def process_delivery(self: Task, delivery_id: str) -> dict[str, Any]:
             raise ValueError(f"Delivery {delivery_id} not found")
 
         if delivery.status == "success":
+            return {
+                "delivery_id": str(delivery.id),
+                "status": delivery.status,
+            }
+
+        if delivery.status == "dead":
             return {
                 "delivery_id": str(delivery.id),
                 "status": delivery.status,
@@ -61,4 +68,9 @@ def process_delivery(self: Task, delivery_id: str) -> dict[str, Any]:
                 "payload": event.payload,
             }
         except httpx.RequestError as exc:
-            raise self.retry(exc=exc) from exc
+            try:
+                raise self.retry(exc=exc) from exc
+            except MaxRetriesExceededError:
+                delivery.status = "dead"
+                db.commit()
+                raise
