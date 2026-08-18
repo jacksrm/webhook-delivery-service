@@ -1,9 +1,13 @@
 from typing import Any
 from uuid import UUID
-
+import json
 from celery.exceptions import MaxRetriesExceededError
 import httpx
 from celery import Task
+
+from webhook_delivery_service.modules.delivery.signature import (
+    generate_signature,
+)
 
 from ....infrastructure.celery import celery_app
 from ....infrastructure.database import SessionLocal
@@ -55,10 +59,25 @@ def process_delivery(self: Task, delivery_id: str) -> dict[str, Any]:
                     timeout=10.0,
                 )
 
+                payload = json.dumps(
+                    event.payload,
+                    separators=(",", ":"),
+                ).encode()
+
+                signature = generate_signature(
+                    payload,
+                    webhook.secret,
+                )
+
+                headers = {
+                    "Content-Type": "application/json",
+                    "X-Webhook-Signature": f"sha256={signature}",
+                }
+
                 response = client.post(  # noqa: F841
                     url=webhook.url,
-                    payload=event.payload,
-                    headers={},
+                    payload=payload,
+                    headers=headers,
                 )
 
             return {

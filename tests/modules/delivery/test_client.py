@@ -1,3 +1,4 @@
+import json
 from unittest.mock import Mock
 
 from webhook_delivery_service.modules.delivery.client import (
@@ -11,15 +12,20 @@ def test_delivery_client_sends_post_request() -> None:
 
     client = DeliveryClient(http_client, timeout=10.0)
 
+    payload = json.dumps(
+        {"user_id": "123"},
+        separators=(",", ":"),
+    ).encode()
+
     response = client.post(
         url="https://example.com/webhook",
-        payload={"user_id": "123"},
+        payload=payload,
         headers={"X-Webhook-Signature": "signature"},
     )
 
     http_client.post.assert_called_once_with(
         "https://example.com/webhook",
-        json={"user_id": "123"},
+        content=payload,
         headers={"X-Webhook-Signature": "signature"},
         timeout=10.0,
     )
@@ -36,15 +42,20 @@ def test_delivery_client_uses_timeout() -> None:
         timeout=10.0,
     )
 
+    payload = json.dumps(
+        {"user_id": "123"},
+        separators=(",", ":"),
+    ).encode()
+
     client.post(
         url="https://example.com/webhook",
-        payload={"user_id": "123"},
+        payload=payload,
         headers={},
     )
 
     http_client.post.assert_called_once_with(
         "https://example.com/webhook",
-        json={"user_id": "123"},
+        content=payload,
         headers={},
         timeout=10.0,
     )

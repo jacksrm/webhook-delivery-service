@@ -1,16 +1,18 @@
-from celery.exceptions import MaxRetriesExceededError
-import httpx
-import pytest
-
+import json
 from unittest.mock import patch
 
-
+import httpx
+import pytest
+from celery.exceptions import MaxRetriesExceededError
 from sqlalchemy import insert
 
 from webhook_delivery_service.infrastructure.database import (
     SessionLocal,
 )
 from webhook_delivery_service.modules.delivery.models import Delivery
+from webhook_delivery_service.modules.delivery.signature import (
+    generate_signature,
+)
 from webhook_delivery_service.modules.delivery.tasks.delivery import (
     process_delivery,
 )
@@ -235,3 +237,50 @@ def test_process_delivery_marks_as_dead_after_max_retries() -> None:
         db.refresh(delivery)
 
         assert delivery.status == "dead"
+
+
+def test_process_delivery_sends_signature_header() -> None:
+    with SessionLocal() as db:
+        webhook = Webhook(
+            url="https://example.com/webhook",
+            secret="secret",
+        )
+
+        event = Event(
+            type="user.created",
+            payload={"user_id": "123"},
+        )
+
+        db.add_all([webhook, event])
+        db.flush()
+
+        delivery = Delivery(
+            event_id=event.id,
+            webhook_id=webhook.id,
+        )
+
+        db.add(delivery)
+        db.commit()
+
+        with patch(
+            "webhook_delivery_service.modules.delivery.tasks.delivery.DeliveryClient"
+        ) as client_class:
+            client = client_class.return_value
+
+            process_delivery.run(str(delivery.id))
+
+            headers = client.post.call_args.kwargs["headers"]
+
+            payload = json.dumps(
+                event.payload,
+                separators=(",", ":"),
+            ).encode()
+
+            expected_signature = generate_signature(
+                payload,
+                webhook.secret,
+            )
+
+            assert headers["X-Webhook-Signature"] == (
+                f"sha256={expected_signature}"
+            )

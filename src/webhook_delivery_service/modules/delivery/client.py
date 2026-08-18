@@ -1,5 +1,3 @@
-from typing import Any
-
 import httpx
 
 
@@ -15,12 +13,12 @@ class DeliveryClient:
     def post(
         self,
         url: str,
-        payload: dict[str, Any],
+        payload: bytes,
         headers: dict[str, str],
     ) -> httpx.Response:
         return self.http_client.post(
             url,
-            json=payload,
+            content=payload,
             headers=headers,
             timeout=self.timeout,
         )
