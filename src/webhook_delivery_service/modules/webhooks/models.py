@@ -12,7 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from webhook_delivery_service.infrastructure.database import Base
+from ...infrastructure.database import Base
 
 webhook_event_types = Table(
     "webhook_event_types",

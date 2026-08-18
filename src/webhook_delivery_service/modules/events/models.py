@@ -5,7 +5,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import JSON, DateTime, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from webhook_delivery_service.infrastructure.database import Base
+from ...infrastructure.database import Base
 
 
 class Event(Base):

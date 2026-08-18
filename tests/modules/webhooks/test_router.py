@@ -1,11 +1,10 @@
 from fastapi.testclient import TestClient
 
-from webhook_delivery_service.main import app
 
-client = TestClient(app)
-
-
-def test_create_webhook() -> None:
+def test_create_webhook(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     url = "https://example.com/webhook"
     secret = "super-secret"
     event_types = ["user.created", "order.created"]
@@ -17,6 +16,7 @@ def test_create_webhook() -> None:
             "secret": secret,
             "event_types": event_types,
         },
+        headers=auth_headers,
     )
     print(response.json())
 
@@ -34,7 +34,10 @@ def test_create_webhook() -> None:
     assert "secret" not in data
 
 
-def test_list_webhooks() -> None:
+def test_list_webhooks(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     webhooks = [
         {
             "url": "https://example.com/webhook-1",
@@ -49,10 +52,14 @@ def test_list_webhooks() -> None:
     ]
 
     for webhook in webhooks:
-        response = client.post("/webhooks/", json=webhook)
+        response = client.post(
+            "/webhooks/",
+            json=webhook,
+            headers=auth_headers,
+        )
         assert response.status_code == 201
 
-    response = client.get("/webhooks/")
+    response = client.get("/webhooks/", headers=auth_headers)
 
     assert response.status_code == 200
 
@@ -82,21 +89,31 @@ def test_list_webhooks() -> None:
         assert "secret" not in item
 
 
-def test_get_webhook() -> None:
+def test_get_webhook(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     webhook = {
         "url": "https://example.com/webhook",
         "secret": "super-secret",
         "event_types": ["user.created", "order.created"],
     }
 
-    create_response = client.post("/webhooks/", json=webhook)
+    create_response = client.post(
+        "/webhooks/",
+        json=webhook,
+        headers=auth_headers,
+    )
 
     assert create_response.status_code == 201
 
     created_data = create_response.json()
     webhook_id = created_data["id"]
 
-    response = client.get(f"/webhooks/{webhook_id}")
+    response = client.get(
+        f"/webhooks/{webhook_id}",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 200
 
@@ -111,22 +128,33 @@ def test_get_webhook() -> None:
     assert "secret" not in data
 
 
-def test_get_webhook_not_found() -> None:
+def test_get_webhook_not_found(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     response = client.get(
-        "/webhooks/00000000-0000-0000-0000-000000000000"
+        "/webhooks/00000000-0000-0000-0000-000000000000",
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
 
 
-def test_update_webhook() -> None:
+def test_update_webhook(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     webhook = {
         "url": "https://example.com/webhook",
         "secret": "super-secret",
         "event_types": ["user.created", "order.created"],
     }
 
-    create_response = client.post("/webhooks/", json=webhook)
+    create_response = client.post(
+        "/webhooks/",
+        json=webhook,
+        headers=auth_headers,
+    )
 
     assert create_response.status_code == 201
 
@@ -139,6 +167,7 @@ def test_update_webhook() -> None:
             "event_types": ["order.created", "order.updated"],
             "is_active": False,
         },
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -155,14 +184,19 @@ def test_update_webhook() -> None:
     assert "secret" not in data
 
 
-def test_update_webhook_partial() -> None:
+def test_update_webhook_partial(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     webhook = {
         "url": "https://example.com/webhook",
         "secret": "super-secret",
         "event_types": ["user.created", "order.created"],
     }
 
-    create_response = client.post("/webhooks/", json=webhook)
+    create_response = client.post(
+        "/webhooks/", json=webhook, headers=auth_headers
+    )
 
     assert create_response.status_code == 201
 
@@ -171,6 +205,7 @@ def test_update_webhook_partial() -> None:
     response = client.patch(
         f"/webhooks/{webhook_id}",
         json={"is_active": False},
+        headers=auth_headers,
     )
 
     assert response.status_code == 200
@@ -182,40 +217,61 @@ def test_update_webhook_partial() -> None:
     assert data["is_active"] is False
 
 
-def test_update_webhook_not_found() -> None:
+def test_update_webhook_not_found(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     response = client.patch(
         "/webhooks/00000000-0000-0000-0000-000000000000",
         json={"is_active": False},
+        headers=auth_headers,
     )
 
     assert response.status_code == 404
 
 
-def test_delete_webhook() -> None:
+def test_delete_webhook(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     webhook = {
         "url": "https://example.com/webhook",
         "secret": "super-secret",
         "event_types": ["user.created", "order.created"],
     }
 
-    create_response = client.post("/webhooks/", json=webhook)
+    create_response = client.post(
+        "/webhooks/",
+        json=webhook,
+        headers=auth_headers,
+    )
 
     assert create_response.status_code == 201
 
     webhook_id = create_response.json()["id"]
 
-    response = client.delete(f"/webhooks/{webhook_id}")
+    response = client.delete(
+        f"/webhooks/{webhook_id}",
+        headers=auth_headers,
+    )
 
     assert response.status_code == 204
 
-    get_response = client.get(f"/webhooks/{webhook_id}")
+    get_response = client.get(
+        f"/webhooks/{webhook_id}",
+        headers=auth_headers,
+    )
 
     assert get_response.status_code == 404
 
 
-def test_delete_webhook_not_found() -> None:
+def test_delete_webhook_not_found(
+    client: TestClient,
+    auth_headers: dict[str, str],
+) -> None:
     response = client.delete(
         "/webhooks/00000000-0000-0000-0000-000000000000",
+        headers=auth_headers,
     )
 
     assert response.status_code == 404

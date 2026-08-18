@@ -1,6 +1,13 @@
+import os
+
+from fastapi.testclient import TestClient
+
+from webhook_delivery_service import env  # noqa: F401
+
 import pytest
 from sqlalchemy import text
 
+from webhook_delivery_service.main import app
 from webhook_delivery_service.infrastructure.database import (
     SessionLocal,
 )
@@ -23,3 +30,13 @@ def clean_database() -> None:
         )
 
         db.commit()
+
+
+@pytest.fixture
+def client() -> TestClient:
+    return TestClient(app)
+
+
+@pytest.fixture
+def auth_headers() -> dict[str, str]:
+    return {"X-API-Key": os.environ["API_KEY"]}

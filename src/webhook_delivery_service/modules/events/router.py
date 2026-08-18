@@ -3,13 +3,20 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from webhook_delivery_service.infrastructure.dependencies import (
+from ...auth.dependencies import (
+    authenticate_api_key,
+)
+from ...infrastructure.dependencies import (
     get_db,
 )
-from .schemas import EventCreate, EventResponse
 from .models import Event
+from .schemas import EventCreate, EventResponse
 
-router = APIRouter(prefix="/events", tags=["events"])
+router = APIRouter(
+    prefix="/events",
+    tags=["events"],
+    dependencies=[Depends(authenticate_api_key)],
+)
 
 
 @router.post(

@@ -2,12 +2,11 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from webhook_delivery_service.modules.webhooks.repository import (
+from ...modules.events.models import Event
+from ...modules.webhooks.repository import (
     find_webhooks_by_event_type,
 )
-
 from .models import Delivery
-from webhook_delivery_service.modules.events.models import Event
 
 
 def create_deliveries_for_event(

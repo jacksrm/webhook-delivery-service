@@ -5,22 +5,25 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from webhook_delivery_service.infrastructure.dependencies import (
+from ...auth.dependencies import authenticate_api_key
+from ...infrastructure.dependencies import (
     get_db,
 )
-from webhook_delivery_service.modules.webhooks.models import (
+from ...modules.webhooks.models import (
     Webhook,
     webhook_event_types,
 )
-
-
 from .schemas import (
     WebhookCreate,
     WebhookResponse,
     WebhookUpdate,
 )
 
-router = APIRouter(prefix="/webhooks", tags=["webhooks"])
+router = APIRouter(
+    prefix="/webhooks",
+    tags=["webhooks"],
+    dependencies=[Depends(authenticate_api_key)],
+)
 
 
 @router.post(
