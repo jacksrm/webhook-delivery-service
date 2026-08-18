@@ -1,10 +1,16 @@
+import pytest
+
+from uuid import UUID
+
 from sqlalchemy import insert
 
 from webhook_delivery_service.infrastructure.database import (
     SessionLocal,
 )
+from webhook_delivery_service.modules.delivery.models import Delivery
 from webhook_delivery_service.modules.delivery.repository import (
     create_deliveries_for_event,
+    update_delivery_status,
 )
 from webhook_delivery_service.modules.events.models import Event
 from webhook_delivery_service.modules.webhooks.models import (
@@ -115,3 +121,71 @@ def test_create_deliveries_for_event_no_unsubscribed_webhooks() -> (
         deliveries = create_deliveries_for_event(db, event)
 
         assert deliveries == []
+
+
+def test_update_delivery_status_to_success() -> None:
+    with SessionLocal() as db:
+        webhook = Webhook(
+            url="https://example.com/webhook",
+            secret="secret",
+        )
+        event = Event(
+            type="user.created",
+            payload={"user_id": "123"},
+        )
+
+        db.add_all([webhook, event])
+        db.flush()
+
+        delivery = Delivery(
+            event_id=event.id,
+            webhook_id=webhook.id,
+        )
+
+        db.add(delivery)
+        db.commit()
+
+        update_delivery_status(db, delivery.id, "success")
+
+        db.refresh(delivery)
+
+        assert delivery.status == "success"
+
+
+def test_update_delivery_status_to_failed() -> None:
+    with SessionLocal() as db:
+        webhook = Webhook(
+            url="https://example.com/webhook",
+            secret="secret",
+        )
+        event = Event(
+            type="user.created",
+            payload={"user_id": "123"},
+        )
+
+        db.add_all([webhook, event])
+        db.flush()
+
+        delivery = Delivery(
+            event_id=event.id,
+            webhook_id=webhook.id,
+        )
+
+        db.add(delivery)
+        db.commit()
+
+        update_delivery_status(db, delivery.id, "failed")
+
+        db.refresh(delivery)
+
+        assert delivery.status == "failed"
+
+
+def test_update_delivery_status_not_found() -> None:
+    with SessionLocal() as db:
+        with pytest.raises(ValueError, match="Delivery not found"):
+            update_delivery_status(
+                db,
+                UUID("00000000-0000-0000-0000-000000000000"),
+                "success",
+            )

@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from sqlalchemy.orm import Session
 
 from webhook_delivery_service.modules.webhooks.repository import (
@@ -22,3 +24,17 @@ def create_deliveries_for_event(
     db.add_all(deliveries)
 
     return deliveries
+
+
+def update_delivery_status(
+    db: Session,
+    delivery_id: UUID,
+    status: str,
+) -> None:
+    delivery = db.get(Delivery, delivery_id)
+
+    if delivery is None:
+        raise ValueError("Delivery not found")
+
+    delivery.status = status
+    db.commit()
