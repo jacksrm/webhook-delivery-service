@@ -117,3 +117,45 @@ def test_process_delivery_has_exponential_backoff() -> None:
 
 def test_process_delivery_has_max_retries() -> None:
     assert process_delivery.max_retries == 4
+
+
+def test_process_delivery_does_not_retry_successful_delivery() -> (
+    None
+):
+    with SessionLocal() as db:
+        webhook = Webhook(
+            url="https://example.com/webhook",
+            secret="secret",
+        )
+
+        event = Event(
+            type="user.created",
+            payload={"user_id": "123"},
+        )
+
+        db.add_all([webhook, event])
+        db.flush()
+
+        db.execute(
+            insert(webhook_event_types),
+            {
+                "webhook_id": webhook.id,
+                "event_type": event.type,
+            },
+        )
+
+        delivery = Delivery(
+            event_id=event.id,
+            webhook_id=webhook.id,
+        )
+        delivery.status = "success"
+
+        db.add(delivery)
+        db.commit()
+
+        with patch(
+            "webhook_delivery_service.modules.delivery.tasks.delivery.DeliveryClient"
+        ) as client_class:
+            process_delivery.run(str(delivery.id))
+
+            client_class.return_value.post.assert_not_called()

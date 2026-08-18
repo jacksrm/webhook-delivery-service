@@ -24,6 +24,12 @@ def process_delivery(self: Task, delivery_id: str) -> dict[str, Any]:
         if delivery is None:
             raise ValueError(f"Delivery {delivery_id} not found")
 
+        if delivery.status == "success":
+            return {
+                "delivery_id": str(delivery.id),
+                "status": delivery.status,
+            }
+
         event = db.get(Event, delivery.event_id)
         webhook = db.get(Webhook, delivery.webhook_id)
 
